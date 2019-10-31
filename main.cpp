@@ -17,7 +17,7 @@ using namespace std;
 #define rirep(i, n) for (int64_t i = n; i >= 0; i--)
 
 template <typename F>
-void forSubset(int n, int k, F f)
+void forComb(int n, int k, F f)
 {
     int comb = (1 << k) - 1;
     while (comb < (1 << n)) {
