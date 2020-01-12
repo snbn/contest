@@ -25,10 +25,8 @@ class UFTree {
     if (r0 == r1) {
       return;
     }
-    if (height[r0] < height[r1])
-      swap(r0, r1);
-    if (height[r0] == height[r1])
-      height[r0]++;
+    if (height[r0] < height[r1]) swap(r0, r1);
+    if (height[r0] == height[r1]) height[r0]++;
     parent[r1] = r0;
   }
 };
@@ -58,8 +56,7 @@ class WUFTree {
       swap(r0, r1);
       z = -z;
     }
-    if (height[r0] == height[r1])
-      height[r0]++;
+    if (height[r0] == height[r1]) height[r0]++;
     parent[r1] = r0;
     diff_weight[r1] = z;
   }

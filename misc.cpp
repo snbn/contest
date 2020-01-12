@@ -58,9 +58,7 @@ uint64_t dpow(uint64_t x, uint64_t y) {
   }
 }
 
-uint64_t inv(uint64_t x) {
-  return dpow(x, MOD - 2);
-}
+uint64_t inv(uint64_t x) { return dpow(x, MOD - 2); }
 
 uint64_t comb(uint64_t n, uint64_t k) {
   uint64_t a = 1, b = 1;

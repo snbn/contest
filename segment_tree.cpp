@@ -136,11 +136,7 @@ class LazySegmentTree {
   }
 
  private:
-  void add_inner(size_t s,
-                 size_t t,
-                 size_t lb,
-                 size_t ub,
-                 size_t node,
+  void add_inner(size_t s, size_t t, size_t lb, size_t ub, size_t node,
                  int64_t x) {
     if (s == lb && t == ub) {
       lazyContainer[node] += x;
