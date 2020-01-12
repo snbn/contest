@@ -1,3 +1,6 @@
+#include <cstdint>
+
+using namespace std;
 
 template <typename F>
 void forComb(int n, int k, F f) {
