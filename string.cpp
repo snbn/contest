@@ -2,7 +2,9 @@
 
 using namespace std;
 
-vector<int> zAlgorithm(const char* s, int n) {
+template <typename It>
+vector<int> zAlgorithm(It s, It t) {
+  int n = t - s;
   vector<int> z(n);
   if (n == 0) {
     return z;
