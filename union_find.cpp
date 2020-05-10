@@ -3,32 +3,36 @@
 using namespace std;
 
 class UFTree {
-  vector<int> parent;
-  vector<int> height;
+  vector<int> m_parent;
+  vector<int> m_height;
+  vector<int> m_size;
 
  public:
   UFTree(int size) {
     for (int i = 0; i < size; i++) {
-      parent.push_back(i);
-      height.push_back(0);
+      m_parent.push_back(i);
+      m_height.push_back(0);
+      m_size.push_back(1);
     }
   }
 
   int root(int node) {
-    if (parent[node] == node) {
+    if (m_parent[node] == node) {
       return node;
     }
-    return parent[node] = root(parent[node]);
+    return m_parent[node] = root(m_parent[node]);
   }
   void merge(int n0, int n1) {
     int r0 = root(n0), r1 = root(n1);
     if (r0 == r1) {
       return;
     }
-    if (height[r0] < height[r1]) swap(r0, r1);
-    if (height[r0] == height[r1]) height[r0]++;
-    parent[r1] = r0;
+    if (m_height[r0] < m_height[r1]) swap(r0, r1);
+    if (m_height[r0] == m_height[r1]) m_height[r0]++;
+    m_parent[r1] = r0;
+    m_size[r0] += m_size[r1];
   }
+  int size(int node) { return m_size[node]; }
 };
 
 template <typename W>
