@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bitset>
 #include <cmath>
 #include <functional>
 #include <iomanip>
