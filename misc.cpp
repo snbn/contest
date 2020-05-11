@@ -50,7 +50,7 @@ void forNeighbor4(int x, int y, F f) {
 
 const uint64_t MOD = 1'000'000'007L;
 
-uint64_t dpow(uint64_t x, uint64_t y) {
+int64_t dpow(int64_t x, int64_t y) {
   if (y == 0) {
     return 1;
   }
@@ -61,11 +61,11 @@ uint64_t dpow(uint64_t x, uint64_t y) {
   }
 }
 
-uint64_t inv(uint64_t x) { return dpow(x, MOD - 2); }
+int64_t inv(int64_t x) { return dpow(x, MOD - 2); }
 
-uint64_t comb(uint64_t n, uint64_t k) {
-  uint64_t a = 1, b = 1;
-  for (uint64_t i = 0; i < k; i++) {
+int64_t comb(int64_t n, int64_t k) {
+  int64_t a = 1, b = 1;
+  for (int64_t i = 0; i < k; i++) {
     a *= (n - i);
     a %= MOD;
     b *= i + 1;
@@ -74,9 +74,9 @@ uint64_t comb(uint64_t n, uint64_t k) {
   return a * inv(b) % MOD;
 }
 
-uint64_t perm(uint64_t n, uint64_t k) {
-  uint64_t r = 1;
-  for (uint64_t i = 0; i < k; i++) {
+int64_t perm(int64_t n, int64_t k) {
+  int64_t r = 1;
+  for (int64_t i = 0; i < k; i++) {
     r *= (n - i);
     r %= MOD;
   }
