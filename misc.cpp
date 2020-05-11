@@ -48,7 +48,7 @@ void forNeighbor4(int x, int y, F f) {
   }
 }
 
-const uint64_t MOD = 1'000'000'007L;
+const int64_t MOD = 1'000'000'007L;
 
 int64_t dpow(int64_t x, int64_t y) {
   if (y == 0) {
