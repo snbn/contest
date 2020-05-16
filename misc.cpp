@@ -18,6 +18,18 @@ void forComb(unsigned int n, unsigned int k, F f) {
   }
 }
 
+template <typename F>
+void forSubset(unsigned int s, F f) {
+  unsigned int sub = s;
+  do {
+    f(sub);
+
+    unsigned int lsb = ~(s ^ -s);
+    sub -= lsb;
+    sub = (sub & s);
+  } while (sub != s);
+}
+
 int64_t dceil(int64_t, int64_t);
 int64_t dfloor(int64_t, int64_t);
 
