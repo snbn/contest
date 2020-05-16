@@ -3,7 +3,11 @@
 using namespace std;
 
 template <typename F>
-void forComb(int n, int k, F f) {
+void forComb(unsigned int n, unsigned int k, F f) {
+  if (k == 0) {
+    f(0);
+    return;
+  }
   int comb = (1 << k) - 1;
   while (comb < (1 << n)) {
     f(comb);
