@@ -10,8 +10,8 @@ class Line;
 template <typename G, typename H>
 std::vector<Vec> intersection(const G& lh, const H& rh);
 template <>
-std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
-                                            const Line& line);
+std::vector<Vec> intersection<Circle, Circle>(const Circle& circle,
+                                              const Circle& line);
 template <>
 std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
                                             const Line& line);
