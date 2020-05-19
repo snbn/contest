@@ -70,8 +70,16 @@ class Line {
 
  public:
   Line(const Vec& grad, double bias) : m_grad(grad), m_bias(bias) {}
+  static Line fromPoints(const Vec& p0, const Vec& p1) {
+    Vec d = p0 - p1;
+    Vec g({-d[1], d[0]});
+    return Line(g, g.inner(p0));
+  }
   const Vec& grad() const { return m_grad; }
   double bias() const { return m_bias; }
+  double dist(const Vec& p) const {
+    return abs(m_grad.inner(p) - m_bias) / m_grad.norm();
+  }
 };
 
 template <>
