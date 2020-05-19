@@ -46,7 +46,7 @@ class FlowNetwork {
         q.pop();
 
         for (const size_t eId : outEdge[v]) {
-          const Edge &data = edgeData[eId];
+          const Edge& data = edgeData[eId];
           const size_t nv = data.to;
           if (parent[nv] < 0 && data.capacity > 0) {
             q.push(nv);
@@ -80,7 +80,70 @@ class FlowNetwork {
     }
   }
 
+  void dinic() {
+    const size_t n = outEdge.size();
+
+    vector<size_t> last(n);
+    vector<int> dist(n);
+    while (true) {
+      // check if reachable to sink
+      fill(dist.begin(), dist.end(), numeric_limits<int>::max());
+      dist[source] = 0;
+      queue<size_t> q;
+      q.push(source);
+
+      while (!q.empty()) {
+        const size_t v = q.front();
+        q.pop();
+
+        for (const size_t eId : outEdge[v]) {
+          const Edge& data = edgeData[eId];
+          const size_t nv = data.to;
+          if (dist[nv] > dist[v] && data.capacity > 0) {
+            q.push(nv);
+            dist[nv] = dist[v] + 1;
+          }
+        }
+      }
+
+      if (dist[sink] == numeric_limits<int>::max()) {
+        break;
+      }
+
+      // select path from source to sink
+      fill(last.begin(), last.end(), 0);
+      int64_t f;
+      do {
+        f = fill_augpath(dist, last, source, numeric_limits<int64_t>::max());
+        flowCache += f;
+      } while (f > 0);
+    }
+  }
+
   int64_t maxflow() const { return flowCache; }
+
+ private:
+  int64_t fill_augpath(const vector<int>& dist, vector<size_t>& last, int v,
+                       int64_t f) {
+    if (v == sink) {
+      return f;
+    }
+
+    const vector<size_t>& es = outEdge[v];
+    for (size_t& i = last[v]; i < es.size(); i++) {
+      Edge& e = edgeData[es[i]];
+      Edge& re = edgeData[es[i] ^ 1];
+      if (dist[v] < dist[e.to] && e.capacity > 0) {
+        const int64_t df = fill_augpath(dist, last, e.to, min(f, e.capacity));
+        e.capacity -= df;
+        re.capacity += df;
+        if (df > 0) {
+          return df;
+        }
+      }
+    }
+    return 0;
+  }
 };
 
 class WeightedFlowNetwork {
@@ -142,7 +205,7 @@ class WeightedFlowNetwork {
         }
 
         for (const int e : outEdge[v]) {
-          const Edge &data = edgeData[e];
+          const Edge& data = edgeData[e];
           const int nv = data.to;
           const int64_t nd = d + data.cost + potential[v] - potential[nv];
           if (dist[nv] > nd && data.capacity - data.flow > 0) {
@@ -153,7 +216,7 @@ class WeightedFlowNetwork {
         }
 
         for (const int e : inEdge[v]) {
-          const Edge &data = edgeData[e];
+          const Edge& data = edgeData[e];
           const int nv = data.from;
           const int64_t nd = d - data.cost + potential[v] - potential[nv];
           if (dist[nv] > nd && data.flow > 0) {
@@ -175,7 +238,7 @@ class WeightedFlowNetwork {
       int v = sink;
       while (v != source) {
         const int e = parent[v];
-        const Edge &data = edgeData[e];
+        const Edge& data = edgeData[e];
         if (data.to == v) {
           fDiff = min(fDiff, data.capacity - data.flow);
           v = data.from;
@@ -189,7 +252,7 @@ class WeightedFlowNetwork {
       v = sink;
       while (v != source) {
         const int e = parent[v];
-        Edge &data = edgeData[e];
+        Edge& data = edgeData[e];
         if (data.to == v) {
           data.flow += fDiff;
           v = data.from;
@@ -203,7 +266,7 @@ class WeightedFlowNetwork {
     }
 
     int64_t rCost = 0;
-    for (const Edge &eData : edgeData) {
+    for (const Edge& eData : edgeData) {
       rCost += eData.cost * eData.flow;
     }
     return pair<int64_t, int64_t>(f - demand, rCost);
