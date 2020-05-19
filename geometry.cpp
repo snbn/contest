@@ -50,6 +50,7 @@ class Vec {
   F ccw(const Vec& other) const {
     return (*this)[0] * other[1] - other[0] * (*this)[1];
   }
+  Vec normal() const { return Vec({-(*this)[1], (*this)[0]}); }
 };
 Vec operator/(const Vec& v, const double& divisor) { return 1.0 / divisor * v; }
 Vec operator*(const double& scale, const Vec& v) {
