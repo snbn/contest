@@ -98,12 +98,24 @@ class Segment {
 
  public:
   Segment(const Vec& start, const Vec& end) : m_start(start), m_end(end) {}
-  bool intersect(const Segment& other) {
+  bool intersect(const Segment& other, const double eps) {
+    const Vec u = other.m_start - m_start, w = other.m_end - m_start;
     const Vec v0 = m_end - m_start, v1 = other.m_end - other.m_start;
+
+    const double vn = v0.norm();
+    double u_v = v0.inner(u) / vn;
+    double w_v = v0.inner(w) / vn;
+    if (abs(abs(u_v / u.norm()) - 1) < eps &&
+        abs(abs(w_v / w.norm()) - 1) < eps) {
+      if (u_v > w_v) {
+        swap(u_v, w_v);
+      }
+      return !(u_v > vn + eps || w_v < -eps);
+    }
     bool cond1 =
-        v0.ccw(other.m_start - m_start) * v0.ccw(other.m_end - m_start) < 0;
+        v0.ccw(other.m_start - m_start) * v0.ccw(other.m_end - m_start) < eps;
     bool cond2 =
-        v1.ccw(m_start - other.m_start) * v1.ccw(m_end - other.m_start) < 0;
+        v1.ccw(m_start - other.m_start) * v1.ccw(m_end - other.m_start) < eps;
     return cond1 && cond2;
   }
 };
