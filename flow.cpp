@@ -8,58 +8,49 @@ using namespace std;
 
 class FlowNetwork {
   struct Edge {
-    int from;
     int to;
     int64_t capacity;
-    int64_t flow;
   };
 
-  vector<vector<int>> outEdge, inEdge;
+  const int source, sink;
+  int64_t flowCache;
+  vector<vector<size_t>> outEdge;
   vector<Edge> edgeData;
 
  public:
-  FlowNetwork(int size) : outEdge(size), inEdge(size) {}
+  FlowNetwork(int size, int source, int sink)
+      : source(source), sink(sink), flowCache(0), outEdge(size) {}
 
   void addEdge(const int from, const int to, const int64_t capacity) {
-    const int eId = edgeData.size();
-    Edge eData;
-    eData.from = from;
-    eData.to = to;
-    eData.flow = 0;
-    eData.capacity = capacity;
-    edgeData.push_back(eData);
+    const size_t eId = edgeData.size();
+    Edge eData1{to, capacity};
+    edgeData.push_back(eData1);
     outEdge[from].push_back(eId);
-    inEdge[to].push_back(eId);
+
+    Edge eData2{from, 0};
+    edgeData.push_back(eData2);
+    outEdge[to].push_back(eId + 1);
   }
 
-  int64_t maxflow(const int source, const int sink) {
-    const int n = outEdge.size();
+  void fordFulkerson() {
+    const size_t n = outEdge.size();
 
     while (true) {
       // check if reachable to sink
       vector<int> parent(n, -1);
-      queue<int> q;
+      queue<size_t> q;
       q.push(source);
 
       while (!q.empty()) {
-        const int v = q.front();
+        const size_t v = q.front();
         q.pop();
 
-        for (const int e : outEdge[v]) {
-          const Edge &data = edgeData[e];
-          const int nv = data.to;
-          if (parent[nv] < 0 && data.capacity - data.flow > 0) {
+        for (const size_t eId : outEdge[v]) {
+          const Edge &data = edgeData[eId];
+          const size_t nv = data.to;
+          if (parent[nv] < 0 && data.capacity > 0) {
             q.push(nv);
-            parent[nv] = e;
-          }
-        }
-
-        for (const int e : inEdge[v]) {
-          const Edge &data = edgeData[e];
-          const int nv = data.from;
-          if (parent[nv] < 0 && data.flow > 0) {
-            q.push(nv);
-            parent[nv] = e;
+            parent[nv] = eId;
           }
         }
       }
@@ -69,41 +60,27 @@ class FlowNetwork {
       }
 
       // select path from source to sink
-      int64_t d = numeric_limits<int64_t>::max();
+      int64_t f = numeric_limits<int64_t>::max();
       int v = sink;
       while (v != source) {
-        const int e = parent[v];
-        const Edge &data = edgeData[e];
-        if (data.to == v) {
-          d = min(d, data.capacity - data.flow);
-          v = data.from;
-        } else {
-          d = min(d, data.flow);
-          v = data.to;
-        }
+        const int eId = parent[v];
+        f = min(f, edgeData[eId].capacity);
+        v = edgeData[eId ^ 1].to;
       }
 
       // update flow on the path
       v = sink;
       while (v != source) {
-        const int e = parent[v];
-        Edge &data = edgeData[e];
-        if (data.to == v) {
-          data.flow += d;
-          v = data.from;
-        } else {
-          data.flow -= d;
-          v = data.to;
-        }
+        const int eId = parent[v];
+        edgeData[eId].capacity -= f;
+        edgeData[eId ^ 1].capacity += f;
+        v = edgeData[eId ^ 1].to;
       }
+      flowCache += f;
     }
-
-    int64_t result = 0;
-    for (const int e : inEdge[sink]) {
-      result += edgeData[e].flow;
-    }
-    return result;
   }
+
+  int64_t maxflow() const { return flowCache; }
 };
 
 class WeightedFlowNetwork {
