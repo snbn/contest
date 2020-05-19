@@ -15,6 +15,8 @@ std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
 template <>
 std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
                                             const Line& line);
+template <>
+vector<Vec> intersection(const Line& lh, const Line& rh);
 
 using namespace std;
 
@@ -133,4 +135,15 @@ vector<Vec> intersection<Circle, Line>(const Circle& circle, const Line& line) {
   }
 
   return move(result);
+}
+template <>
+vector<Vec> intersection(const Line& lh, const Line& rh) {
+  const Vec &g1 = lh.grad(), g2 = rh.grad();
+  const double c1 = lh.bias(), c2 = rh.bias();
+  const Vec g = g1.unit();
+  const Vec h({-g[1], g[0]});
+
+  const double k = (c2 - g.inner(g2) * c1 / g1.norm()) / h.inner(g2);
+  vector<Vec> result = vector<Vec>(1, c1 / g1.norm() * g + k * h);
+  return result;
 }
