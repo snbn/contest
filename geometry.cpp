@@ -85,6 +85,11 @@ class Line {
   double dist(const Vec& p) const {
     return abs(m_grad.inner(p) - m_bias) / m_grad.norm();
   }
+  Vec projection(const Vec& p) const {
+    const Vec g = m_grad.unit();
+    const Vec h({-g[1], g[0]});
+    return m_bias / m_grad.norm() * g + h.inner(p) * h;
+  }
 };
 
 class Segment {
