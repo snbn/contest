@@ -119,6 +119,27 @@ class Segment {
         v1.ccw(m_start - other.m_start) * v1.ccw(m_end - other.m_start) < eps;
     return cond1 && cond2;
   }
+  Vec direction() const { return m_end - m_start; }
+  double dist(const Vec& p) const {
+    const Vec dir = direction();
+    const Vec d = dir.unit();
+    const Vec q = p - m_start;
+    const double a = d.inner(q);
+    if (a < 0) {
+      return (m_start - p).norm();
+    } else if (dir.norm() < a) {
+      return (m_end - p).norm();
+    } else {
+      return abs(d.normal().inner(q));
+    }
+  }
+  double dist(const Segment& other) const {
+    if (intersect(other, 0.0)) {
+      return 0.0;
+    }
+    return min(min(dist(other.m_start), dist(other.m_end)),
+               min(other.dist(m_start), other.dist(m_end)));
+  }
 };
 
 template <>
