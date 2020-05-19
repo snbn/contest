@@ -45,6 +45,9 @@ class Vec {
   }
   F norm() const { return sqrt(inner(*this)); }
   Vec unit() const { return (*this) / this->norm(); }
+  F ccw(const Vec& other) const {
+    return (*this)[0] * other[1] - other[0] * (*this)[1];
+  }
 };
 Vec operator/(const Vec& v, const double& divisor) { return 1.0 / divisor * v; }
 Vec operator*(const double& scale, const Vec& v) {
@@ -79,6 +82,22 @@ class Line {
   double bias() const { return m_bias; }
   double dist(const Vec& p) const {
     return abs(m_grad.inner(p) - m_bias) / m_grad.norm();
+  }
+};
+
+class Segment {
+  const Vec m_start;
+  const Vec m_end;
+
+ public:
+  Segment(const Vec& start, const Vec& end) : m_start(start), m_end(end) {}
+  bool intersect(const Segment& other) {
+    const Vec v0 = m_end - m_start, v1 = other.m_end - other.m_start;
+    bool cond1 =
+        v0.ccw(other.m_start - m_start) * v0.ccw(other.m_end - m_start) < 0;
+    bool cond2 =
+        v1.ccw(m_start - other.m_start) * v1.ccw(m_end - other.m_start) < 0;
+    return cond1 && cond2;
   }
 };
 
