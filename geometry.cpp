@@ -98,7 +98,7 @@ class Segment {
 
  public:
   Segment(const Vec& start, const Vec& end) : m_start(start), m_end(end) {}
-  bool intersect(const Segment& other, const double eps) {
+  bool intersect(const Segment& other, const double eps) const {
     const Vec u = other.m_start - m_start, w = other.m_end - m_start;
     const Vec v0 = m_end - m_start, v1 = other.m_end - other.m_start;
 
