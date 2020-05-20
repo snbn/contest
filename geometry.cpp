@@ -187,6 +187,18 @@ class Polygon {
     }
     return acc / 2.0;
   }
+  bool isConvex(double eps) const {
+    const size_t n = vert.size();
+    for (size_t i = 0; i < n; i++) {
+      const Vec a = vert[(i + 1) % n] - vert[i],
+                b = vert[(i + 2) % n] - vert[i];
+      const double c = a.ccw(b);
+      if (c < -eps) {
+        return false;
+      }
+    }
+    return true;
+  }
 };
 
 template <>
