@@ -99,6 +99,38 @@ class Segment {
 
  public:
   Segment(const Vec& start, const Vec& end) : m_start(start), m_end(end) {}
+
+  static const int ONLINE = 0x7;
+  static const int ONSEGMENT = 0x1;
+  static const int FRONT = 0x2;
+  static const int BACK = 0x4;
+  static const int OFFLINE = 0x18;
+  static const int CCW = 0x8;
+  static const int CW = 0x10;
+  int check_rel(const Vec& p, double eps) const {
+    const Vec u = direction();
+    const Vec v = p - m_start;
+    const double uLen = u.norm();
+
+    const double a = u.ccw(v);
+
+    int result = 0;
+    if (a > eps) {
+      result |= CCW;
+    } else if (a < -eps) {
+      result |= CW;
+    } else {
+      const double det = u.inner(v) / uLen;
+      if (det < -eps) {
+        result |= BACK;
+      } else if (det > uLen + eps) {
+        result |= FRONT;
+      } else {
+        result |= ONSEGMENT;
+      }
+    }
+    return result;
+  }
   bool intersect(const Segment& other, const double eps) const {
     const Vec u = other.m_start - m_start, w = other.m_end - m_start;
     const Vec v0 = m_end - m_start, v1 = other.m_end - other.m_start;
