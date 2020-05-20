@@ -174,6 +174,21 @@ class Segment {
   }
 };
 
+class Polygon {
+  const vector<Vec>& vert;
+
+ public:
+  Polygon(const vector<Vec>& vert) : vert(vert) {}
+  double area() const {
+    const size_t n = vert.size();
+    double acc = 0;
+    for (size_t i = 0; i < n; i++) {
+      acc += vert[i].ccw(vert[(i + 1) % n]);
+    }
+    return acc / 2.0;
+  }
+};
+
 template <>
 vector<Vec> intersection<Circle, Circle>(const Circle& c0, const Circle& c1) {
   const Vec& p0 = c0.center();
