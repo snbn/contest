@@ -199,6 +199,30 @@ class Polygon {
     }
     return true;
   }
+
+  static const int ON_EDGE = 0x3;
+  static const int CONTAINED = 0x1;
+  static const int NOT_CONTAINED = 0x2;
+  int check_rel(const Vec& p, double eps) const {
+    const size_t n = vert.size();
+    double angle = 0;
+    for (size_t i = 0; i < n; i++) {
+      const Vec &s = vert[i], &t = vert[(i + 1) % n];
+
+      if (Segment(s, t).check_rel(p, eps) == Segment::ONSEGMENT) {
+        return ON_EDGE;
+      }
+
+      const Vec u = s - p, v = t - p;
+      const double theta = atan2(u.ccw(v), u.inner(v));
+      angle += theta;
+    }
+    if (angle < 3) {  // check if 0 or 2*PI
+      return NOT_CONTAINED;
+    } else {
+      return CONTAINED;
+    }
+  }
 };
 
 template <>
