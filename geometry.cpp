@@ -25,8 +25,8 @@ class Vec {
   vector<F> container;
 
  public:
-  Vec(size_t size) : container(size) {}
-  Vec(initializer_list<F> elements)
+  explicit Vec(size_t size) : container(size) {}
+  explicit Vec(initializer_list<F> elements)
       : container(elements.begin(), elements.end()) {}
   size_t dim() const { return container.size(); }
   F& operator[](const size_t size) { return container.at(size); }
