@@ -238,7 +238,7 @@ vector<Vec> intersection<Circle, Circle>(const Circle& c0, const Circle& c1) {
   double r0 = c0.radius();
   double r1 = c1.radius();
 
-  Vec grad({2.0 * (p1[0] - p0[0]), 2.0 * (p1[1] - p0[1])});
+  Vec grad = 2.0 * (p1 - p0);
   const double bias = (r0 - r1) * (r0 + r1) -
                       (p0[0] - p1[0]) * (p0[0] + p1[0]) -
                       (p0[1] - p1[1]) * (p0[1] + p1[1]);
