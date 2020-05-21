@@ -252,11 +252,11 @@ vector<Vec> intersection<Circle, Line>(const Circle& circle, const Line& line) {
   const double dist = (line.bias() - line.grad().inner(circle.center())) / g;
 
   const double det = pow(circle.radius(), 2) - pow(dist, 2);
-  if (det >= 0) {
+  if (det > 0) {
     const double s = sqrt(det);
     const Vec u = line.grad().unit();
     const Vec p = circle.center() + dist * u;
-    Vec dir({-u[1], u[0]});
+    Vec dir = u.normal();
 
     result.push_back(p + s * dir);
     result.push_back(p - s * dir);
