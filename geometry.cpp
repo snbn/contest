@@ -45,6 +45,12 @@ class Vec {
     }
     return acc;
   }
+  Vec& operator+=(const Vec& other) {
+    for (size_t i = 0; i < dim(); i++) {
+      (*this)[i] += other[i];
+    }
+    return *this;
+  }
   F norm() const { return sqrt(inner(*this)); }
   Vec unit() const { return (*this) / this->norm(); }
   F ccw(const Vec& other) const {
