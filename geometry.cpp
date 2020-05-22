@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -228,6 +229,51 @@ class Polygon {
     } else {
       return CONTAINED;
     }
+  }
+};
+
+class Convex {
+  const vector<Vec>& m_points;
+  vector<int> m_hull;
+
+ public:
+  Convex(const vector<Vec>& points) : m_points(points), m_hull() {
+    const size_t n = m_points.size();
+
+    vector<int> idx(n);
+    for (size_t i = 0; i < n; i++) idx[i] = i;
+    sort(idx.begin(), idx.end(), [&](const int& lh, const int& rh) {
+      if (m_points[lh][0] == m_points[rh][0]) {
+        return m_points[lh][1] < m_points[rh][1];
+      }
+      return m_points[lh][0] < m_points[rh][0];
+    });
+
+    vector<int> conv[2];
+    double si = 1;
+    for (int j = 0; j < 2; j++) {
+      vector<int>& cv = conv[j];
+      for (size_t i = 0; i < n; i++) {
+        const int k = idx[i];
+        const Vec& c = m_points[k];
+        while (cv.size() >= 2 &&
+               si * (m_points[cv[cv.size() - 1]] - m_points[cv[cv.size() - 2]])
+                           .ccw(c - m_points[cv[cv.size() - 2]]) <
+                   0) {
+          cv.pop_back();
+        }
+        cv.push_back(k);
+      }
+      si *= -1;
+    }
+
+    copy(conv[0].begin(), conv[0].end(), back_inserter(m_hull));
+    copy(next(conv[1].rbegin()), prev(conv[1].rend()), back_inserter(m_hull));
+  }
+  size_t size() const { return m_hull.size(); }
+  const vector<int>& ids() const { return m_hull; }
+  const Vec& operator[](size_t index) const {
+    return m_points.at(m_hull.at(index));
   }
 };
 
