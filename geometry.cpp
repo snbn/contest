@@ -270,6 +270,22 @@ class Convex {
     copy(conv[0].begin(), conv[0].end(), back_inserter(m_hull));
     copy(next(conv[1].rbegin()), prev(conv[1].rend()), back_inserter(m_hull));
   }
+  double diameter() const {
+    double result = 0;
+    const size_t n = m_hull.size();
+    int j = 0;
+    for (size_t i = 0; i < n; i++) {
+      double d = ((*this)[i] - (*this)[j % n]).norm();
+      double e = ((*this)[i] - (*this)[(j + 1) % n]).norm();
+      while (d < e) {
+        j++;
+        d = e;
+        e = ((*this)[i] - (*this)[(j + 1) % n]).norm();
+      }
+      result = max(result, d);
+    }
+    return result;
+  }
   size_t size() const { return m_hull.size(); }
   const vector<int>& ids() const { return m_hull; }
   const Vec& operator[](size_t index) const {
