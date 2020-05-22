@@ -12,11 +12,11 @@ template <typename G, typename H>
 std::pair<std::vector<Vec>, bool> intersection(const G& lh, const H& rh,
                                                double eps);
 template <>
-std::vector<Vec> intersection<Circle, Circle>(const Circle& circle,
-                                              const Circle& line);
+std::pair<std::vector<Vec>, bool> intersection<Circle, Circle>(
+    const Circle& circle, const Circle& line, double eps);
 template <>
-std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
-                                            const Line& line);
+std::pair<std::vector<Vec>, bool> intersection<Circle, Line>(
+    const Circle& circle, const Line& line, double eps);
 template <>
 std::pair<std::vector<Vec>, bool> intersection(const Line& lh, const Line& rh,
                                                double eps);
@@ -296,38 +296,56 @@ class Convex {
 };
 
 template <>
-vector<Vec> intersection<Circle, Circle>(const Circle& c0, const Circle& c1) {
+pair<vector<Vec>, bool> intersection<Circle, Circle>(const Circle& c0,
+                                                     const Circle& c1,
+                                                     double eps) {
   const Vec& p0 = c0.center();
   const Vec& p1 = c1.center();
   double r0 = c0.radius();
   double r1 = c1.radius();
 
-  Vec grad = 2.0 * (p1 - p0);
-  const double bias = (r0 - r1) * (r0 + r1) -
-                      (p0[0] - p1[0]) * (p0[0] + p1[0]) -
-                      (p0[1] - p1[1]) * (p0[1] + p1[1]);
-  return move(intersection(c0, Line(grad, bias)));
+  const Vec v = p0 - p1;
+
+  if (r0 + r1 < v.norm()) {
+    return make_pair(vector<Vec>(), false);
+  } else if (r0 > r1 + v.norm() || r1 > r0 + v.norm()) {
+    return make_pair(vector<Vec>(), false);
+  } else {
+    Vec grad = 2.0 * (p1 - p0);
+    const double bias = (r0 - r1) * (r0 + r1) -
+                        (p0[0] - p1[0]) * (p0[0] + p1[0]) -
+                        (p0[1] - p1[1]) * (p0[1] + p1[1]);
+    return move(intersection(c0, Line(grad, bias), eps));
+  }
 }
 template <>
-vector<Vec> intersection<Circle, Line>(const Circle& circle, const Line& line) {
-  vector<Vec> result;
-
+pair<vector<Vec>, bool> intersection<Circle, Line>(const Circle& circle,
+                                                   const Line& line,
+                                                   double eps) {
   const double g = line.grad().norm();
-  const double dist = (line.bias() - line.grad().inner(circle.center())) / g;
 
-  const double det = pow(circle.radius(), 2) - pow(dist, 2);
-  if (det > 0) {
-    const double s = sqrt(det);
-    const Vec u = line.grad().unit();
-    const Vec p = circle.center() + dist * u;
-    Vec dir = u.normal();
+  if (g < eps) {
+    return make_pair(vector<Vec>(), abs(line.bias()) < eps);
+  } else {
+    vector<Vec> result;
+    const double dist = (line.bias() - line.grad().inner(circle.center())) / g;
 
-    result.push_back(p + s * dir);
-    result.push_back(p - s * dir);
+    const double det = pow(circle.radius(), 2) - pow(dist, 2);
+    if (det < 0) {
+    } else {
+      const double s = sqrt(det);
+      const Vec u = line.grad().unit();
+      const Vec p = circle.center() + dist * u;
+      Vec dir = u.normal();
+
+      result.push_back(p + s * dir);
+      result.push_back(p - s * dir);
+    }
+
+    return make_pair(move(result), false);
   }
-
-  return move(result);
 }
+
 template <>
 pair<vector<Vec>, bool> intersection(const Line& lh, const Line& rh,
                                      double eps) {
