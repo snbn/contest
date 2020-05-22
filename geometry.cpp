@@ -9,7 +9,8 @@ Vec operator*(const double& scale, const Vec& v);
 class Circle;
 class Line;
 template <typename G, typename H>
-std::vector<Vec> intersection(const G& lh, const H& rh);
+std::pair<std::vector<Vec>, bool> intersection(const G& lh, const H& rh,
+                                               double eps);
 template <>
 std::vector<Vec> intersection<Circle, Circle>(const Circle& circle,
                                               const Circle& line);
@@ -17,7 +18,8 @@ template <>
 std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
                                             const Line& line);
 template <>
-vector<Vec> intersection(const Line& lh, const Line& rh);
+std::pair<std::vector<Vec>, bool> intersection(const Line& lh, const Line& rh,
+                                               double eps);
 
 using namespace std;
 
@@ -327,13 +329,20 @@ vector<Vec> intersection<Circle, Line>(const Circle& circle, const Line& line) {
   return move(result);
 }
 template <>
-vector<Vec> intersection(const Line& lh, const Line& rh) {
+pair<vector<Vec>, bool> intersection(const Line& lh, const Line& rh,
+                                     double eps) {
   const Vec &g1 = lh.grad(), g2 = rh.grad();
   const double c1 = lh.bias(), c2 = rh.bias();
   const Vec g = g1.unit();
-  const Vec h({-g[1], g[0]});
+  const Vec h = g.normal();
 
-  const double k = (c2 - g.inner(g2) * c1 / g1.norm()) / h.inner(g2);
-  vector<Vec> result = vector<Vec>(1, c1 / g1.norm() * g + k * h);
-  return result;
+  const double det = h.inner(g2);
+
+  if (abs(det) / g2.norm() < eps) {
+    return make_pair(vector<Vec>(), abs(c1 * g2.norm() - c2 * g1.norm()) < eps);
+  } else {
+    const double k = (c2 - g.inner(g2) * c1 / g1.norm()) / det;
+    vector<Vec> result = vector<Vec>(1, c1 / g1.norm() * g + k * h);
+    return make_pair(result, false);
+  }
 }
