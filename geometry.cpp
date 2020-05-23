@@ -10,11 +10,13 @@ class Line;
 template <typename G, typename H>
 std::vector<Vec> intersection(const G& lh, const H& rh);
 template <>
-std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
-                                            const Line& line);
+std::vector<Vec> intersection<Circle, Circle>(const Circle& circle,
+                                              const Circle& line);
 template <>
 std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
                                             const Line& line);
+template <>
+vector<Vec> intersection(const Line& lh, const Line& rh);
 
 using namespace std;
 
@@ -23,8 +25,8 @@ class Vec {
   vector<F> container;
 
  public:
-  Vec(size_t size) : container(size) {}
-  Vec(initializer_list<F> elements)
+  explicit Vec(size_t size) : container(size) {}
+  explicit Vec(initializer_list<F> elements)
       : container(elements.begin(), elements.end()) {}
   size_t dim() const { return container.size(); }
   F& operator[](const size_t size) { return container.at(size); }
@@ -43,11 +45,18 @@ class Vec {
     }
     return acc;
   }
+  Vec& operator+=(const Vec& other) {
+    for (size_t i = 0; i < dim(); i++) {
+      (*this)[i] += other[i];
+    }
+    return *this;
+  }
   F norm() const { return sqrt(inner(*this)); }
   Vec unit() const { return (*this) / this->norm(); }
   F ccw(const Vec& other) const {
     return (*this)[0] * other[1] - other[0] * (*this)[1];
   }
+  Vec normal() const { return Vec({-(*this)[1], (*this)[0]}); }
 };
 Vec operator/(const Vec& v, const double& divisor) { return 1.0 / divisor * v; }
 Vec operator*(const double& scale, const Vec& v) {
@@ -83,6 +92,11 @@ class Line {
   double dist(const Vec& p) const {
     return abs(m_grad.inner(p) - m_bias) / m_grad.norm();
   }
+  Vec projection(const Vec& p) const {
+    const Vec g = m_grad.unit();
+    const Vec h({-g[1], g[0]});
+    return m_bias / m_grad.norm() * g + h.inner(p) * h;
+  }
 };
 
 class Segment {
@@ -91,13 +105,129 @@ class Segment {
 
  public:
   Segment(const Vec& start, const Vec& end) : m_start(start), m_end(end) {}
-  bool intersect(const Segment& other) {
+
+  static const int ONLINE = 0x7;
+  static const int ONSEGMENT = 0x1;
+  static const int FRONT = 0x2;
+  static const int BACK = 0x4;
+  static const int OFFLINE = 0x18;
+  static const int CCW = 0x8;
+  static const int CW = 0x10;
+  int check_rel(const Vec& p, double eps) const {
+    const Vec u = direction();
+    const Vec v = p - m_start;
+    const double uLen = u.norm();
+
+    const double a = u.ccw(v);
+
+    int result = 0;
+    if (a > eps) {
+      result |= CCW;
+    } else if (a < -eps) {
+      result |= CW;
+    } else {
+      const double det = u.inner(v) / uLen;
+      if (det < -eps) {
+        result |= BACK;
+      } else if (det > uLen + eps) {
+        result |= FRONT;
+      } else {
+        result |= ONSEGMENT;
+      }
+    }
+    return result;
+  }
+  bool intersect(const Segment& other, const double eps) const {
+    const Vec u = other.m_start - m_start, w = other.m_end - m_start;
     const Vec v0 = m_end - m_start, v1 = other.m_end - other.m_start;
+
+    const double vn = v0.norm();
+    double u_v = v0.inner(u) / vn;
+    double w_v = v0.inner(w) / vn;
+    if (abs(abs(u_v / u.norm()) - 1) < eps &&
+        abs(abs(w_v / w.norm()) - 1) < eps) {
+      if (u_v > w_v) {
+        swap(u_v, w_v);
+      }
+      return !(u_v > vn + eps || w_v < -eps);
+    }
     bool cond1 =
-        v0.ccw(other.m_start - m_start) * v0.ccw(other.m_end - m_start) < 0;
+        v0.ccw(other.m_start - m_start) * v0.ccw(other.m_end - m_start) < eps;
     bool cond2 =
-        v1.ccw(m_start - other.m_start) * v1.ccw(m_end - other.m_start) < 0;
+        v1.ccw(m_start - other.m_start) * v1.ccw(m_end - other.m_start) < eps;
     return cond1 && cond2;
+  }
+  Vec direction() const { return m_end - m_start; }
+  double dist(const Vec& p) const {
+    const Vec dir = direction();
+    const Vec d = dir.unit();
+    const Vec q = p - m_start;
+    const double a = d.inner(q);
+    if (a < 0) {
+      return (m_start - p).norm();
+    } else if (dir.norm() < a) {
+      return (m_end - p).norm();
+    } else {
+      return abs(d.normal().inner(q));
+    }
+  }
+  double dist(const Segment& other) const {
+    if (intersect(other, 0.0)) {
+      return 0.0;
+    }
+    return min(min(dist(other.m_start), dist(other.m_end)),
+               min(other.dist(m_start), other.dist(m_end)));
+  }
+};
+
+class Polygon {
+  const vector<Vec>& vert;
+
+ public:
+  Polygon(const vector<Vec>& vert) : vert(vert) {}
+  double area() const {
+    const size_t n = vert.size();
+    double acc = 0;
+    for (size_t i = 0; i < n; i++) {
+      acc += vert[i].ccw(vert[(i + 1) % n]);
+    }
+    return acc / 2.0;
+  }
+  bool isConvex(double eps) const {
+    const size_t n = vert.size();
+    for (size_t i = 0; i < n; i++) {
+      const Vec a = vert[(i + 1) % n] - vert[i],
+                b = vert[(i + 2) % n] - vert[i];
+      const double c = a.ccw(b);
+      if (c < -eps) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static const int ON_EDGE = 0x3;
+  static const int CONTAINED = 0x1;
+  static const int NOT_CONTAINED = 0x2;
+  int check_rel(const Vec& p, double eps) const {
+    const size_t n = vert.size();
+    double angle = 0;
+    for (size_t i = 0; i < n; i++) {
+      const Vec &s = vert[i], &t = vert[(i + 1) % n];
+
+      if (Segment(s, t).check_rel(p, eps) == Segment::ONSEGMENT) {
+        return ON_EDGE;
+      }
+
+      const Vec u = s - p, v = t - p;
+      const double theta = atan2(u.ccw(v), u.inner(v));
+      angle += theta;
+    }
+    if (angle < 3) {  // check if 0 or 2*PI
+      return NOT_CONTAINED;
+    } else {
+      return CONTAINED;
+    }
   }
 };
 
@@ -108,7 +238,7 @@ vector<Vec> intersection<Circle, Circle>(const Circle& c0, const Circle& c1) {
   double r0 = c0.radius();
   double r1 = c1.radius();
 
-  Vec grad({2.0 * (p1[0] - p0[0]), 2.0 * (p1[1] - p0[1])});
+  Vec grad = 2.0 * (p1 - p0);
   const double bias = (r0 - r1) * (r0 + r1) -
                       (p0[0] - p1[0]) * (p0[0] + p1[0]) -
                       (p0[1] - p1[1]) * (p0[1] + p1[1]);
@@ -122,15 +252,26 @@ vector<Vec> intersection<Circle, Line>(const Circle& circle, const Line& line) {
   const double dist = (line.bias() - line.grad().inner(circle.center())) / g;
 
   const double det = pow(circle.radius(), 2) - pow(dist, 2);
-  if (det >= 0) {
+  if (det > 0) {
     const double s = sqrt(det);
     const Vec u = line.grad().unit();
     const Vec p = circle.center() + dist * u;
-    Vec dir({-u[1], u[0]});
+    Vec dir = u.normal();
 
     result.push_back(p + s * dir);
     result.push_back(p - s * dir);
   }
 
   return move(result);
+}
+template <>
+vector<Vec> intersection(const Line& lh, const Line& rh) {
+  const Vec &g1 = lh.grad(), g2 = rh.grad();
+  const double c1 = lh.bias(), c2 = rh.bias();
+  const Vec g = g1.unit();
+  const Vec h({-g[1], g[0]});
+
+  const double k = (c2 - g.inner(g2) * c1 / g1.norm()) / h.inner(g2);
+  vector<Vec> result = vector<Vec>(1, c1 / g1.norm() * g + k * h);
+  return result;
 }
