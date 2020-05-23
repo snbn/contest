@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -8,15 +9,17 @@ Vec operator*(const double& scale, const Vec& v);
 class Circle;
 class Line;
 template <typename G, typename H>
-std::vector<Vec> intersection(const G& lh, const H& rh);
+std::pair<std::vector<Vec>, bool> intersection(const G& lh, const H& rh,
+                                               double eps);
 template <>
-std::vector<Vec> intersection<Circle, Circle>(const Circle& circle,
-                                              const Circle& line);
+std::pair<std::vector<Vec>, bool> intersection<Circle, Circle>(
+    const Circle& circle, const Circle& line, double eps);
 template <>
-std::vector<Vec> intersection<Circle, Line>(const Circle& circle,
-                                            const Line& line);
+std::pair<std::vector<Vec>, bool> intersection<Circle, Line>(
+    const Circle& circle, const Line& line, double eps);
 template <>
-vector<Vec> intersection(const Line& lh, const Line& rh);
+std::pair<std::vector<Vec>, bool> intersection(const Line& lh, const Line& rh,
+                                               double eps);
 
 using namespace std;
 
@@ -231,47 +234,133 @@ class Polygon {
   }
 };
 
+class Convex {
+  const vector<Vec>& m_points;
+  vector<int> m_hull;
+
+ public:
+  Convex(const vector<Vec>& points) : m_points(points), m_hull() {
+    const size_t n = m_points.size();
+
+    vector<int> idx(n);
+    for (size_t i = 0; i < n; i++) idx[i] = i;
+    sort(idx.begin(), idx.end(), [&](const int& lh, const int& rh) {
+      if (m_points[lh][0] == m_points[rh][0]) {
+        return m_points[lh][1] < m_points[rh][1];
+      }
+      return m_points[lh][0] < m_points[rh][0];
+    });
+
+    vector<int> conv[2];
+    double si = 1;
+    for (int j = 0; j < 2; j++) {
+      vector<int>& cv = conv[j];
+      for (size_t i = 0; i < n; i++) {
+        const int k = idx[i];
+        const Vec& c = m_points[k];
+        while (cv.size() >= 2 &&
+               si * (m_points[cv[cv.size() - 1]] - m_points[cv[cv.size() - 2]])
+                           .ccw(c - m_points[cv[cv.size() - 2]]) <
+                   0) {
+          cv.pop_back();
+        }
+        cv.push_back(k);
+      }
+      si *= -1;
+    }
+
+    copy(conv[0].begin(), conv[0].end(), back_inserter(m_hull));
+    copy(next(conv[1].rbegin()), prev(conv[1].rend()), back_inserter(m_hull));
+  }
+  double diameter() const {
+    double result = 0;
+    const size_t n = m_hull.size();
+    int j = 0;
+    for (size_t i = 0; i < n; i++) {
+      double d = ((*this)[i] - (*this)[j % n]).norm();
+      double e = ((*this)[i] - (*this)[(j + 1) % n]).norm();
+      while (d < e) {
+        j++;
+        d = e;
+        e = ((*this)[i] - (*this)[(j + 1) % n]).norm();
+      }
+      result = max(result, d);
+    }
+    return result;
+  }
+  size_t size() const { return m_hull.size(); }
+  const vector<int>& ids() const { return m_hull; }
+  const Vec& operator[](size_t index) const {
+    return m_points.at(m_hull[index % size()]);
+  }
+};
+
 template <>
-vector<Vec> intersection<Circle, Circle>(const Circle& c0, const Circle& c1) {
+pair<vector<Vec>, bool> intersection<Circle, Circle>(const Circle& c0,
+                                                     const Circle& c1,
+                                                     double eps) {
   const Vec& p0 = c0.center();
   const Vec& p1 = c1.center();
   double r0 = c0.radius();
   double r1 = c1.radius();
 
-  Vec grad = 2.0 * (p1 - p0);
-  const double bias = (r0 - r1) * (r0 + r1) -
-                      (p0[0] - p1[0]) * (p0[0] + p1[0]) -
-                      (p0[1] - p1[1]) * (p0[1] + p1[1]);
-  return move(intersection(c0, Line(grad, bias)));
-}
-template <>
-vector<Vec> intersection<Circle, Line>(const Circle& circle, const Line& line) {
-  vector<Vec> result;
+  const Vec v = p0 - p1;
 
-  const double g = line.grad().norm();
-  const double dist = (line.bias() - line.grad().inner(circle.center())) / g;
-
-  const double det = pow(circle.radius(), 2) - pow(dist, 2);
-  if (det > 0) {
-    const double s = sqrt(det);
-    const Vec u = line.grad().unit();
-    const Vec p = circle.center() + dist * u;
-    Vec dir = u.normal();
-
-    result.push_back(p + s * dir);
-    result.push_back(p - s * dir);
+  if (r0 + r1 < v.norm()) {
+    return make_pair(vector<Vec>(), false);
+  } else if (r0 > r1 + v.norm() || r1 > r0 + v.norm()) {
+    return make_pair(vector<Vec>(), false);
+  } else {
+    Vec grad = 2.0 * (p1 - p0);
+    const double bias = (r0 - r1) * (r0 + r1) -
+                        (p0[0] - p1[0]) * (p0[0] + p1[0]) -
+                        (p0[1] - p1[1]) * (p0[1] + p1[1]);
+    return move(intersection(c0, Line(grad, bias), eps));
   }
-
-  return move(result);
 }
 template <>
-vector<Vec> intersection(const Line& lh, const Line& rh) {
+pair<vector<Vec>, bool> intersection<Circle, Line>(const Circle& circle,
+                                                   const Line& line,
+                                                   double eps) {
+  const double g = line.grad().norm();
+
+  if (g < eps) {
+    return make_pair(vector<Vec>(), abs(line.bias()) < eps);
+  } else {
+    vector<Vec> result;
+    const double dist = (line.bias() - line.grad().inner(circle.center())) / g;
+
+    const double det = pow(circle.radius(), 2) - pow(dist, 2);
+    if (det < 0) {
+    } else {
+      const double s = sqrt(det);
+      const Vec u = line.grad().unit();
+      const Vec p = circle.center() + dist * u;
+      Vec dir = u.normal();
+
+      result.push_back(p + s * dir);
+      result.push_back(p - s * dir);
+    }
+
+    return make_pair(move(result), false);
+  }
+}
+
+template <>
+pair<vector<Vec>, bool> intersection(const Line& lh, const Line& rh,
+                                     double eps) {
   const Vec &g1 = lh.grad(), g2 = rh.grad();
   const double c1 = lh.bias(), c2 = rh.bias();
   const Vec g = g1.unit();
-  const Vec h({-g[1], g[0]});
+  const Vec h = g.normal();
 
-  const double k = (c2 - g.inner(g2) * c1 / g1.norm()) / h.inner(g2);
-  vector<Vec> result = vector<Vec>(1, c1 / g1.norm() * g + k * h);
-  return result;
+  const double det = h.inner(g2);
+
+  if (abs(det) / g2.norm() < eps) {
+    return make_pair(vector<Vec>(), abs(c1 * g2.norm() - c2 * g1.norm()) < eps);
+  } else {
+    const double k = (c2 - g.inner(g2) * c1 / g1.norm()) / det;
+    vector<Vec> result = vector<Vec>(1, c1 / g1.norm() * g + k * h);
+    return make_pair(result, false);
+  }
 }
