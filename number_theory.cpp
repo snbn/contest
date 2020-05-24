@@ -32,3 +32,17 @@ vector<pair<int, int>> factorize(int n) {
   }
   return move(result);
 }
+
+vector<bool> eratosthenes_sieve(size_t size) {
+  vector<bool> is_prime(size + 1, true);
+  for (size_t i = 0; i <= size; i++) {
+    if (i < 2) {
+      is_prime[i] = false;
+    } else if (is_prime[i]) {
+      for (size_t j = 2 * i; j <= size; j += i) {
+        is_prime[j] = false;
+      }
+    }
+  }
+  return move(is_prime);
+}
