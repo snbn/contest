@@ -9,17 +9,17 @@ class Modint {
   int64_t m_value;
 
  public:
-  explicit Modint(int64_t value) : m_value(value % MOD) {}
+  explicit Modint(int64_t value) : m_value((value % MOD + MOD) % MOD) {}
   Self& operator=(const Self& rh) {
     m_value = rh.m_value;
     return *this;
   }
-  Self operator-() const { return Self(MOD - m_value); }
+  Self operator-() const { return Self(-m_value); }
   Self operator+(const Self& other) const {
     return Self(m_value + other.m_value);
   }
   Self operator-(const Self& other) const {
-    return Self(m_value - other.m_value + MOD);
+    return Self(m_value - other.m_value);
   }
   Self operator*(const Self& other) const {
     return Self(m_value * other.m_value);
