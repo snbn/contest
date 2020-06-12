@@ -13,6 +13,19 @@ bool is_prime(int n) {
   return true;
 }
 
+vector<size_t> factors(size_t n) {
+  vector<size_t> result;
+  for (size_t d = 1; d * d <= n; d++) {
+    if (n % d == 0) {
+      result.push_back(d);
+      if (n / d != d) {
+        result.push_back(n / d);
+      }
+    }
+  }
+  return result;
+}
+
 vector<pair<int, int>> factorize(int n) {
   vector<pair<int, int>> result;
   for (int p = 2; p * p <= n; p++) {
