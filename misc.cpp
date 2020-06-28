@@ -30,6 +30,16 @@ void forSubset(unsigned int s, F f) {
   } while (sub != s);
 }
 
+int64_t fill_ones(int64_t a) {
+  a |= a >> 1;
+  a |= a >> 2;
+  a |= a >> 4;
+  a |= a >> 8;
+  a |= a >> 16;
+  a |= a >> 32;
+  return a;
+}
+
 int64_t dceil(int64_t, int64_t);
 int64_t dfloor(int64_t, int64_t);
 
