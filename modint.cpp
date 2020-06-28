@@ -39,5 +39,6 @@ class Modint {
   Self& operator+=(const Self& rh) { return (*this) = (*this) + rh; }
   Self& operator-=(const Self& rh) { return (*this) = (*this) - rh; }
   Self& operator*=(const Self& rh) { return (*this) = (*this) * rh; }
+  Self& operator/=(const Self& rh) { return (*this) = (*this) / rh; }
   int64_t value() const { return m_value; }
 };
