@@ -18,4 +18,7 @@ using namespace std;
 #define rrep(i, n) for (int64_t i = (n)-1; i >= 0; i--)
 #define rirep(i, n) for (int64_t i = n; i >= 0; i--)
 
+#define chmax(a, b) (a) = max(a, b)
+#define chmin(a, b) (a) = min(a, b)
+
 int main() { return 0; }
