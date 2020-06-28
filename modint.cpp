@@ -9,6 +9,7 @@ class Modint {
   int64_t m_value;
 
  public:
+  Modint() : m_value(0) {}
   Modint(int64_t value) : m_value((value % MOD + MOD) % MOD) {}
   Self pow(int64_t e) const {
     if (e == 0) {
