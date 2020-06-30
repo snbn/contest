@@ -1,3 +1,4 @@
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -58,4 +59,17 @@ vector<bool> eratosthenes_sieve(size_t size) {
     }
   }
   return move(is_prime);
+}
+
+int totient(const int n) {
+  vector<pair<int, int>> fs = factorize(n);
+  int result = n;
+
+  for (auto pa : fs) {
+    int p, e;
+    tie(p, e) = pa;
+    result /= p;
+    result *= p - 1;
+  }
+  return result;
 }
