@@ -73,3 +73,12 @@ size_t totient(const size_t n) {
   }
   return result;
 }
+
+tuple<int64_t, int64_t, int64_t> xgcd(int64_t a, int64_t b) {
+  if (b == 0) {
+    return make_tuple(1, 0, a);
+  }
+  int64_t z, w, d;
+  tie(z, w, d) = xgcd(b, a % b);
+  return make_tuple(w, z - a / b * w, d);
+}
