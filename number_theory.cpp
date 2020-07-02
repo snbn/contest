@@ -4,8 +4,8 @@
 
 using namespace std;
 
-bool is_prime(int n) {
-  for (int p = 2; p * p <= n; p++) {
+bool is_prime(size_t n) {
+  for (size_t p = 2; p * p <= n; p++) {
     if (n % p == 0) {
       return false;
     }
@@ -27,11 +27,11 @@ vector<size_t> factors(size_t n) {
   return result;
 }
 
-vector<pair<int, int>> factorize(int n) {
-  vector<pair<int, int>> result;
-  for (int p = 2; p * p <= n; p++) {
+vector<pair<size_t, size_t>> factorize(size_t n) {
+  vector<pair<size_t, size_t>> result;
+  for (size_t p = 2; p * p <= n; p++) {
     if (is_prime(p)) {
-      int cnt = 0;
+      size_t cnt = 0;
       while (n % p == 0) {
         n /= p;
         cnt++;
@@ -61,13 +61,13 @@ vector<bool> eratosthenes_sieve(size_t size) {
   return move(is_prime);
 }
 
-int totient(const int n) {
-  vector<pair<int, int>> fs = factorize(n);
-  int result = n;
+size_t totient(const size_t n) {
+  vector<pair<size_t, size_t>> fs = factorize(n);
+  size_t result = n;
 
   for (auto pa : fs) {
-    int p, e;
-    tie(p, e) = pa;
+    size_t p;
+    tie(p, ignore) = pa;
     result /= p;
     result *= p - 1;
   }
