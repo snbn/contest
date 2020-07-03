@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <vector>
 
 using namespace std;
 
@@ -35,4 +36,29 @@ int64_t perm(int64_t n, int64_t k) {
     r %= MOD;
   }
   return r;
+}
+
+/// lookup table of k! for k in {1, ..., n}
+vector<int64_t> factorials(size_t n, size_t MOD) {
+  vector<int64_t> result(n + 1, 1);
+  for (size_t i = 1; i <= n; i++) {
+    result[i] = result[i - 1] * i % MOD;
+  }
+  return result;
+}
+
+/**
+ *  lookup table of stirling number s(i,j) for i in {1, ..., n} and j in {1,
+ *  ..., m}
+ * s(i, j) == the number of partition of n items into m nonempty groups
+ * */
+vector<vector<int64_t>> stirling2(size_t n, size_t m, size_t MOD) {
+  vector<vector<int64_t>> result(n + 1, vector<int64_t>(m + 1, 0));
+  result[0][0] = 1;
+  for (size_t i = 1; i <= n; i++)
+    for (size_t j = 1; j <= i; j++) {
+      result[i][j] = result[i - 1][j - 1] + j * result[i - 1][j] % MOD;
+      result[i][j] %= MOD;
+    }
+  return result;
 }
