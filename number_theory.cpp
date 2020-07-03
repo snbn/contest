@@ -1,3 +1,4 @@
+#include <sstream>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -81,4 +82,39 @@ tuple<int64_t, int64_t, int64_t> xgcd(int64_t a, int64_t b) {
   int64_t z, w, d;
   tie(z, w, d) = xgcd(b, a % b);
   return make_tuple(w, z - a / b * w, d);
+}
+
+tuple<int64_t, int64_t> chinese_rem(int64_t a1, int64_t a2, int64_t m1,
+                                    int64_t m2) {
+  int64_t x, y, d;
+  tie(x, y, d) = xgcd(m1, m2);
+
+  const int64_t c = a2 - a1;
+  if (c % d != 0) {
+    return make_tuple(0, 0);
+  }
+  const int64_t tmp = c / d * x % (m2 / d);
+  const int64_t sln = a1 + tmp * m1;
+  const int64_t M = m1 / d * m2;
+
+  return make_tuple((sln % M + M) % M, M);
+}
+
+tuple<int64_t, int64_t> chinese_rem(const vector<int64_t>& a,
+                                    const vector<int64_t>& MOD) {
+  if (a.size() != MOD.size()) {
+    stringstream msg;
+    msg << "a.size() is " << a.size() << ", but MOD.size()" << MOD.size()
+        << "\n";
+    throw msg.str();
+  }
+  int64_t sln = 0, M = 1;
+  for (int i = 0; i < a.size(); i++) {
+    tie(sln, M) = chinese_rem(sln, a[i], M, MOD[i]);
+    if (M == 0) {
+      return make_tuple(0, 0);
+    }
+  }
+
+  return make_tuple(sln, M);
 }
