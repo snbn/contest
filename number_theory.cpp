@@ -109,7 +109,7 @@ tuple<int64_t, int64_t> chinese_rem(const vector<int64_t>& a,
     throw msg.str();
   }
   int64_t sln = 0, M = 1;
-  for (int i = 0; i < a.size(); i++) {
+  for (size_t i = 0; i < a.size(); i++) {
     tie(sln, M) = chinese_rem(sln, a[i], M, MOD[i]);
     if (M == 0) {
       return make_tuple(0, 0);
