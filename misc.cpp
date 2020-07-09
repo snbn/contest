@@ -24,9 +24,8 @@ void forSubset(unsigned int s, F f) {
   do {
     f(sub);
 
-    unsigned int lsb = ~(s ^ -s);
-    sub -= lsb;
-    sub = (sub & s);
+    sub--;
+    sub &= s;
   } while (sub != s);
 }
 
