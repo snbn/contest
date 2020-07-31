@@ -21,4 +21,8 @@ using namespace std;
 #define chmax(a, b) (a) = max(a, b)
 #define chmin(a, b) (a) = min(a, b)
 
-int main() { return 0; }
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+  return 0;
+}
