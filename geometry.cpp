@@ -290,8 +290,9 @@ class Convex {
   }
   size_t size() const { return m_hull.size(); }
   const vector<int>& ids() const { return m_hull; }
-  const Vec& operator[](size_t index) const {
-    return m_points.at(m_hull[index % size()]);
+  const Vec& operator[](int index) const {
+    int m = size();
+    return m_points.at(m_hull[(index % m + m) % m]);
   }
 };
 

@@ -32,7 +32,7 @@ class UFTree {
     m_parent[r1] = r0;
     m_size[r0] += m_size[r1];
   }
-  int size(int node) { return m_size[node]; }
+  int size(int node) { return m_size[root(node)]; }
 };
 
 template <typename W>
