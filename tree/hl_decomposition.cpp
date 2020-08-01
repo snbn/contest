@@ -32,11 +32,11 @@ class HLDecomposition {
       mPosition[mRelation[i].second] = i;
     }
   }
-  int parent(int node) { return mParent[node]; }
-  int depth(int node) { return mDepth[node]; }
-  int root(int node) { return mRoot[node]; }
-  int pos(int node) { return mPosition[node]; }
-  int lca(int u, int v) {
+  int parent(int node) const { return mParent[node]; }
+  int depth(int node) const { return mDepth[node]; }
+  int root(int node) const { return mRoot[node]; }
+  int pos(int node) const { return mPosition[node]; }
+  int lca(int u, int v) const {
     while (root(u) != root(v)) {
       if (depth(root(u)) < depth(root(v))) {
         swap(u, v);
