@@ -1,3 +1,4 @@
+#include <queue>
 #include <vector>
 
 using namespace std;
@@ -20,8 +21,8 @@ class HLDecomposition {
         mDepth(edge.size(), 0),
         mRoot(edge.size()),
         mPosition(edge.size()) {
-    before_dfs(0);
-    dfs(0, -1, 0);
+    before_bfs(0);
+    bfs(0);
     stable_sort(
         mRelation.begin(), mRelation.end(),
         [](const Rel &lh, const Rel &rh) { return lh.first < rh.first; });
@@ -58,7 +59,7 @@ class HLDecomposition {
   }
 
  private:
-  void before_dfs(int root) {
+  void before_bfs(int root) {
     vector<int> idx(mEdge.size(), 0);
     vector<int> s;
     s.push_back(root);
@@ -84,18 +85,27 @@ class HLDecomposition {
       }
     }
   }
-  void dfs(int node, int parent, int group) {
-    mRelation.push_back(Rel(group, node));
-    int s = mEdge[node].size() - (parent < 0 ? 0 : 1);
-    bool exists = false;
-    for (int c : mEdge[node]) {
-      if (c != parent) {
-        int g = c;
-        if (!exists && mSize[c] >= (mSize[node] - 1 + s - 1) / s) {
-          g = group;
-          exists = true;
+  void bfs(int r) {
+    queue<int> q;
+    q.push(r);
+    mRoot[r] = r;
+    while (!q.empty()) {
+      const int node = q.front();
+      q.pop();
+
+      mRelation.push_back(Rel(mRoot[node], node));
+      const int s = mEdge[node].size() - (mParent[node] < 0 ? 0 : 1);
+      bool exists = false;
+      for (int c : mEdge[node]) {
+        if (c != mParent[node]) {
+          int g = c;
+          if (!exists && mSize[c] >= (mSize[node] - 1 + s - 1) / s) {
+            g = mRoot[node];
+            exists = true;
+          }
+          mRoot[c] = g;
+          q.push(c);
         }
-        dfs(c, node, g);
       }
     }
   }
