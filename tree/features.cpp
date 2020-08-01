@@ -3,25 +3,52 @@
 
 using namespace std;
 
-void tree_size(int node, int parent, const vector<vector<int>> &edge,
-               vector<int> &size) {
-  size[node] = 1;
-  for (int c : edge[node]) {
-    if (c != parent) {
-      tree_size(c, node, edge, size);
-      size[node] += size[c];
+vector<int> tree_size(int root, const vector<vector<int>> &edge) {
+  vector<int> result(edge.size(), 1);
+  vector<int> idx(edge.size(), 0);
+  vector<int> parent(edge.size(), -1);
+  vector<int> s;
+  s.push_back(root);
+  while (!s.empty()) {
+    int node = s.back();
+    int &i = idx[node];
+    if (i < edge[node].size()) {
+      if (edge[node][i] == parent[node]) {
+        i++;
+        continue;
+      }
+      s.push_back(edge[node][i]);
+      parent[edge[node][i]] = node;
+      i++;
+    } else {
+      for (int c : edge[node]) {
+        if (c != parent[node]) {
+          result[node] += result[c];
+        }
+      }
+      s.pop_back();
     }
   }
+  return result;
 }
 
-void tree_parent(int node, int parent, const vector<vector<int>> &edge,
-                 vector<int> &parents) {
-  parents[node] = parent;
-  for (int c : edge[node]) {
-    if (c != parent) {
-      tree_parent(c, node, edge, parents);
+vector<int> tree_parent(int root, const vector<vector<int>> &edge) {
+  vector<int> result(edge.size(), -1);
+  queue<int> q;
+  q.push(root);
+
+  while (!q.empty()) {
+    const int node = q.front();
+    q.pop();
+
+    for (int c : edge[node]) {
+      if (c != result[node]) {
+        result[c] = node;
+        q.push(c);
+      }
     }
   }
+  return result;
 }
 
 vector<int> tree_depth(int root, const vector<vector<int>> &edge) {
