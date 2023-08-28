@@ -1,11 +1,9 @@
 #include <vector>
 
-using namespace std;
-
 template <typename It>
-vector<int> zAlgorithm(It s, It t) {
+std::vector<int> zAlgorithm(It s, It t) {
   int n = t - s;
-  vector<int> z(n);
+  std::vector<int> z(n);
   if (n == 0) {
     return z;
   }
@@ -18,6 +16,7 @@ vector<int> zAlgorithm(It s, It t) {
     if (r > i + z[i - l]) {
       z[i] = z[i - l];
     } else {
+      using std::max;
       z[i] = max(0, r - i);
       l = i;
       for (int j = z[i]; i + j < n && s[i + j] == s[j]; j++) {
@@ -27,5 +26,6 @@ vector<int> zAlgorithm(It s, It t) {
   }
   z[0] = n;
 
+  using std::move;
   return move(z);
 }
