@@ -1,14 +1,16 @@
 #include <queue>
 #include <vector>
 
-using namespace std;
+std::vector<int> tree_size(int root,
+                           const std::vector<std::vector<int>> &edge) {
+  using std::vector;
 
-vector<int> tree_size(int root, const vector<vector<int>> &edge) {
   vector<int> result(edge.size(), 1);
   vector<int> idx(edge.size(), 0);
   vector<int> parent(edge.size(), -1);
   vector<int> s;
   s.push_back(root);
+
   while (!s.empty()) {
     int node = s.back();
     int &i = idx[node];
@@ -29,10 +31,14 @@ vector<int> tree_size(int root, const vector<vector<int>> &edge) {
       s.pop_back();
     }
   }
+
   return result;
 }
 
-vector<int> tree_parent(int root, const vector<vector<int>> &edge) {
+std::vector<int> tree_parent(int root,
+                             const std::vector<std::vector<int>> &edge) {
+  using std::vector, std::queue;
+
   vector<int> result(edge.size(), -1);
   queue<int> q;
   q.push(root);
@@ -48,10 +54,14 @@ vector<int> tree_parent(int root, const vector<vector<int>> &edge) {
       }
     }
   }
+
   return result;
 }
 
-vector<int> tree_depth(int root, const vector<vector<int>> &edge) {
+std::vector<int> tree_depth(int root,
+                            const std::vector<std::vector<int>> &edge) {
+  using std::vector, std::queue;
+
   queue<int> q;
   vector<int> depth(edge.size(), -1);
 
