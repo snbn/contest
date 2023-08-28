@@ -1,11 +1,9 @@
 #include <vector>
 
-using namespace std;
-
 class UFTree {
-  vector<int> m_parent;
-  vector<int> m_height;
-  vector<int> m_size;
+  std::vector<int> m_parent;
+  std::vector<int> m_height;
+  std::vector<int> m_size;
 
  public:
   UFTree(int size) {
@@ -23,6 +21,8 @@ class UFTree {
     return m_parent[node] = root(m_parent[node]);
   }
   void merge(int n0, int n1) {
+    using std::swap;
+
     int r0 = root(n0), r1 = root(n1);
     if (r0 == r1) {
       return;
@@ -37,9 +37,9 @@ class UFTree {
 
 template <typename W>
 class WUFTree {
-  vector<int> parent;
-  vector<int> height;
-  vector<W> diff_weight;
+  std::vector<int> parent;
+  std::vector<int> height;
+  std::vector<W> diff_weight;
 
  public:
   WUFTree(int size) {
@@ -67,13 +67,17 @@ class WUFTree {
   W diff(int n0, int n1) { return weight(n1) - weight(n0); }
 
  protected:
-  pair<int, W> shrink(int node) {
+  std::pair<int, W> shrink(int node) {
+    using std::make_pair;
+
     if (parent[node] == node) {
       return make_pair(node, 0);
     }
+
     auto p = shrink(parent[node]);
     parent[node] = p.first;
     diff_weight[node] += p.second;
+
     return make_pair(parent[node], diff_weight[node]);
   }
   W weight(int node) { return shrink(node).second; }
