@@ -3,18 +3,17 @@
 #include <functional>
 #include <vector>
 
-using namespace std;
-
 template <typename T>
 class SegmentTree {
   const T unit;
-  const function<T(const T&, const T&)> op;
-  vector<T> container;
+  const std::function<T(const T&, const T&)> op;
+  std::vector<T> container;
 
  public:
   template <typename Op>
   SegmentTree(int size, const T& identity, const Op& operation)
       : unit(identity), op(operation), container(msb(size * 2 - 1)) {
+    using std::fill;
     fill(container.begin(), container.end(), unit);
   }
   void update(size_t index, T value) {
@@ -33,11 +32,6 @@ class SegmentTree {
     }
     return find_inner(s, t, 0, container.size() / 2);
   }
-  const T& operator[](size_t index) const {
-    const size_t N = container.size() / 2;
-    assert(index < N);
-    return container[index + N];
-  }
 
  private:
   T find_inner(size_t s, size_t t, size_t lb, size_t ub) {
@@ -49,9 +43,11 @@ class SegmentTree {
     T result = unit;
     size_t mid = (lb + ub) / 2;
     if (mid > s) {
+      using std::min;
       result = op(result, find_inner(s, min(mid, t), lb, mid));
     }
     if (mid < t) {
+      using std::max;
       result = op(result, find_inner(max(s, mid), t, mid, ub));
     }
 
