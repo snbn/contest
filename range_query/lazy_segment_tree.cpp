@@ -1,11 +1,9 @@
 #include <cstdint>
 #include <vector>
 
-using namespace std;
-
 class LazySegmentTree {
-  vector<int64_t> container;
-  vector<int64_t> lazyContainer;
+  std::vector<int64_t> container;
+  std::vector<int64_t> lazyContainer;
 
  public:
   LazySegmentTree(int size)
@@ -31,6 +29,7 @@ class LazySegmentTree {
       return;
     }
 
+    using std::min, std::max;
     size_t mid = (lb + ub) / 2;
     if (mid > s) {
       add_inner(s, min(mid, t), lb, mid, node * 2, x);
@@ -49,6 +48,7 @@ class LazySegmentTree {
       return container[node];
     }
 
+    using std::min, std::max;
     int64_t result = 0;
     size_t mid = (lb + ub) / 2;
     if (mid > s) {
