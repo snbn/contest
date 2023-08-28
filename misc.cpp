@@ -1,7 +1,5 @@
 #include <cstdint>
 
-using namespace std;
-
 template <typename F>
 void forComb(unsigned int n, unsigned int k, F f) {
   if (k == 0) {
