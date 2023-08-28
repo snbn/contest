@@ -1,13 +1,11 @@
 #include <cstdint>
 #include <vector>
 
-using namespace std;
-
-class BinaryIndexedTree {
-  vector<int64_t> container;
+class FenwickTree {
+  std::vector<int64_t> container;
 
  public:
-  BinaryIndexedTree(size_t size) : container(size + 1) {
+  FenwickTree(size_t size) : container(size + 1) {
     fill(container.begin(), container.end(), 0);
   }
   void add(size_t i, int64_t v) {
