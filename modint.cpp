@@ -1,7 +1,5 @@
 #include <cstdint>
 
-using std::int64_t;
-
 template <int64_t MOD>
 class Modint {
   using Self = Modint<MOD>;
