@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <vector>
 
@@ -31,6 +32,11 @@ class SegmentTree {
       return unit;
     }
     return find_inner(s, t, 0, container.size() / 2);
+  }
+  const T& operator[](size_t index) const {
+    const size_t N = container.size() / 2;
+    assert(index < N);
+    return container[index + N];
   }
 
  private:
