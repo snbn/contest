@@ -1,29 +1,23 @@
+#include <algorithm>
 #include <vector>
 
-class EulerTour {
-  const std::vector<std::vector<int>> &mEdge;
-
-  std::vector<int> mOrderL, mOrderR, mSorted;
-
- public:
-  explicit EulerTour(const std::vector<std::vector<int>> &edge)
-      : mEdge(edge), mOrderL(edge.size()), mOrderR(edge.size()) {
-    dfs(0, -1);
-  }
-  int l(int node) const { return mOrderL[node]; }
-  int r(int node) const { return mOrderR[node]; }
-  const std::vector<int> &tour() const { return mSorted; }
-
- private:
-  void dfs(int node, int parent) {
-    mOrderL[node] = mSorted.size();
-    mSorted.push_back(node);
-    for (int c : mEdge[node]) {
-      if (c != parent) {
-        dfs(c, node);
-      }
-      mSorted.push_back(node);
+namespace tree {
+void euler_tour(const std::vector<std::vector<int>> &outEdges,
+                std::vector<int> &result, int currNode, int parent) {
+  result.push_back(currNode);
+  for (int child : outEdges[currNode]) {
+    if (child != parent) {
+      euler_tour(outEdges, result, child, currNode);
     }
-    mOrderR[node] = mSorted.size() - 1;
+    result.push_back(currNode);
   }
-};
+}
+void order_in_euler_tour(const std::vector<int> &tour,
+                         std::vector<int> &result) {
+  fill(result.begin(), result.end(), -1);
+  for (size_t i = 0; i < tour.size(); i++) {
+    const int node = tour[i];
+    if (result[node] == -1) result[node] = i;
+  }
+}
+}  // namespace tree
