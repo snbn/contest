@@ -1,20 +1,19 @@
+#include <algorithm>
 #include <queue>
 #include <vector>
 
-using namespace std;
-
 class HLDecomposition {
-  const vector<vector<int>> &mEdge;
+  const std::vector<std::vector<int>> &mEdge;
 
-  vector<int> mSize, mParent, mDepth;
+  std::vector<int> mSize, mParent, mDepth;
 
-  using Rel = pair<int, int>;
-  vector<Rel> mRelation;
-  vector<int> mRoot;
-  vector<int> mPosition;
+  using Rel = std::pair<int, int>;
+  std::vector<Rel> mRelation;
+  std::vector<int> mRoot;
+  std::vector<int> mPosition;
 
  public:
-  explicit HLDecomposition(const vector<vector<int>> &edge)
+  explicit HLDecomposition(const std::vector<std::vector<int>> &edge)
       : mEdge(edge),
         mSize(edge.size(), 1),
         mParent(edge.size(), -1),
@@ -39,6 +38,7 @@ class HLDecomposition {
   int lca(int u, int v) const {
     while (root(u) != root(v)) {
       if (depth(root(u)) < depth(root(v))) {
+        using std::swap;
         swap(u, v);
       }
       u = parent(root(u));
@@ -60,6 +60,8 @@ class HLDecomposition {
 
  private:
   void before_bfs(int root) {
+    using std::vector;
+
     vector<int> idx(mEdge.size(), 0);
     vector<int> s;
     s.push_back(root);
@@ -86,6 +88,8 @@ class HLDecomposition {
     }
   }
   void bfs(int r) {
+    using std::queue;
+
     queue<int> q;
     q.push(r);
     mRoot[r] = r;
