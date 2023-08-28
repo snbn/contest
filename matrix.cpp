@@ -3,12 +3,10 @@
 #include <ostream>
 #include <vector>
 
-using namespace std;
-
 template <typename F>
 class Matrix {
   size_t m_col;
-  vector<F> m_container;
+  std::vector<F> m_container;
 
  public:
   explicit Matrix(size_t row, size_t col)
@@ -94,7 +92,7 @@ bool Matrix<double>::is_zero(const double& v) {
 }
 
 template <typename F>
-ostream& operator<<(ostream& out, const Matrix<F>& m) {
+std::ostream& operator<<(std::ostream& out, const Matrix<F>& m) {
   out << "[\n";
   for (size_t i = 0; i < m.row(); i++) {
     out << " [";
