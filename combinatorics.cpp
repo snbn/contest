@@ -1,8 +1,6 @@
 #include <cstdint>
 #include <vector>
 
-using namespace std;
-
 int64_t dpow(int64_t a, int64_t b, int64_t MOD) {
   if (b == 0) {
     return 1;
@@ -35,7 +33,9 @@ int64_t perm(int64_t n, int64_t k, int64_t MOD) {
 }
 
 /// lookup table of k! for k in {1, ..., n}
-vector<int64_t> factorials(size_t n, size_t MOD) {
+std::vector<int64_t> factorials(size_t n, size_t MOD) {
+  using std::vector;
+
   vector<int64_t> result(n + 1, 1);
   for (size_t i = 1; i <= n; i++) {
     result[i] = result[i - 1] * i % MOD;
@@ -48,7 +48,9 @@ vector<int64_t> factorials(size_t n, size_t MOD) {
  *  ..., m}
  * s(i, j) == the number of partition of n items into m nonempty groups
  * */
-vector<vector<int64_t>> stirling2(size_t n, size_t m, size_t MOD) {
+std::vector<std::vector<int64_t>> stirling2(size_t n, size_t m, size_t MOD) {
+  using std::vector;
+
   vector<vector<int64_t>> result(n + 1, vector<int64_t>(m + 1, 0));
   result[0][0] = 1;
   for (size_t i = 1; i <= n; i++)
