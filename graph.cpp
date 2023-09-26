@@ -28,7 +28,7 @@ std::vector<std::vector<int>> inversed_edge(
     const std::vector<std::vector<int>> &edgeList) {
   std::vector<std::vector<int>> result(edgeList.size());
 
-  for (int to = 0; to < edgeList.size(); to++) {
+  for (std::size_t to = 0; to < edgeList.size(); to++) {
     for (int from : edgeList[to]) {
       result[from].push_back(to);
     }
@@ -70,4 +70,27 @@ std::vector<int> scc(const std::vector<std::vector<int>> &outEdgeList) {
   }
 
   return groupList;
+}
+
+std::vector<std::vector<int>> merge_scc(
+    const std::vector<std::vector<int>> &outEdgeList,
+    const std::vector<int> &groupList) {
+  std::vector<std::vector<int>> result(outEdgeList.size());
+
+  for (std::size_t s = 0; s < outEdgeList.size(); s++) {
+    const int from = groupList[s];
+    for (int t : outEdgeList[s]) {
+      const int to = groupList[t];
+      if (from != to) {
+        result[from].push_back(to);
+      }
+    }
+  }
+
+  for (auto &list : result) {
+    std::sort(list.begin(), list.end());
+    list.erase(std::unique(list.begin(), list.end()), list.end());
+  }
+
+  return result;
 }
