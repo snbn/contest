@@ -12,41 +12,15 @@ vector<vector<int>> inversed_edge(const vector<vector<int>> &edge) {
   return result;
 }
 
-class TopologicalSort {
-  const vector<vector<int>> &mOutEdge;
-  vector<int> mIsVisited;
-
- public:
-  TopologicalSort(const TopologicalSort &) = delete;
-  TopologicalSort &operator=(const TopologicalSort &) = delete;
-  TopologicalSort(TopologicalSort &&) = delete;
-  TopologicalSort &operator=(TopologicalSort &&) = delete;
-
-  explicit TopologicalSort(const vector<vector<int>> &outEdge)
-      : mOutEdge(outEdge), mIsVisited(outEdge.size()) {}
-  vector<int> build() {
-    const int N = mIsVisited.size();
-    fill(mIsVisited.begin(), mIsVisited.end(), false);
-    vector<int> sorted;
-    for (int i = 0; i < N; i++) {
-      if (!mIsVisited[i]) {
-        dfs(i, sorted);
-      }
-    }
-    return sorted;
+void topological_sort(int node, const std::vector<std::vector<int>> &outEdge,
+                      std::vector<int> &sorted, std::vector<bool> &isVisited) {
+  if (isVisited[node]) return;
+  isVisited[node] = true;
+  for (int c : outEdge[node]) {
+    topological_sort(c, outEdge, sorted, isVisited);
   }
-
- private:
-  void dfs(int node, vector<int> &sorted) {
-    mIsVisited[node] = true;
-    for (int c : mOutEdge[node]) {
-      if (!mIsVisited[c]) {
-        dfs(c, sorted);
-      }
-    }
-    sorted.push_back(node);
-  }
-};
+  sorted.push_back(node);
+}
 
 class StrictlyConnectedComponent {
   const vector<vector<int>> &mInEdge;
