@@ -1,16 +1,5 @@
+#include <algorithm>
 #include <vector>
-
-using namespace std;
-
-vector<vector<int>> inversed_edge(const vector<vector<int>> &edge) {
-  vector<vector<int>> result(edge.size());
-  for (int i = 0; i < edge.size(); i++) {
-    for (int from : edge[i]) {
-      result[from].push_back(i);
-    }
-  }
-  return result;
-}
 
 void topological_sort(int node, const std::vector<std::vector<int>> &outEdge,
                       std::vector<int> &sorted, std::vector<bool> &isVisited) {
@@ -22,41 +11,63 @@ void topological_sort(int node, const std::vector<std::vector<int>> &outEdge,
   sorted.push_back(node);
 }
 
-class StrictlyConnectedComponent {
-  const vector<vector<int>> &mInEdge;
-  const vector<int> mSorted;
-  vector<int> mIsVisited;
+void sort_preorder(const int node,
+                   const std::vector<std::vector<int>> &outEdgeList,
+                   std::vector<int> &sorted, std::vector<bool> &isVisited) {
+  if (isVisited[node]) return;
+  isVisited[node] = true;
 
- public:
-  StrictlyConnectedComponent(const StrictlyConnectedComponent &) = delete;
-  StrictlyConnectedComponent &operator=(const StrictlyConnectedComponent &) =
-      delete;
-  StrictlyConnectedComponent(StrictlyConnectedComponent &&) = delete;
-  StrictlyConnectedComponent &operator=(StrictlyConnectedComponent &&) = delete;
-
-  explicit StrictlyConnectedComponent(const vector<vector<int>> &inEdge,
-                                      const vector<int> &sorted)
-      : mInEdge(inEdge), mSorted(sorted), mIsVisited(inEdge.size()) {}
-  vector<int> build() {
-    const int N = mIsVisited.size();
-    vector<int> group(N);
-    fill(mIsVisited.begin(), mIsVisited.end(), false);
-    for (int i = N - 1; i >= 0; i--) {
-      if (!mIsVisited[mSorted[i]]) {
-        dfs(mSorted[i], i, group);
-      }
-    }
-    return group;
+  for (const int c : outEdgeList[node]) {
+    sort_preorder(c, outEdgeList, sorted, isVisited);
   }
 
- private:
-  void dfs(int node, int curr, vector<int> &group) {
-    mIsVisited[node] = true;
-    group[node] = curr;
-    for (int c : mInEdge[node]) {
-      if (!mIsVisited[c]) {
-        dfs(c, curr, group);
-      }
+  sorted.push_back(node);
+}
+
+std::vector<std::vector<int>> inversed_edge(
+    const std::vector<std::vector<int>> &edgeList) {
+  std::vector<std::vector<int>> result(edgeList.size());
+
+  for (int to = 0; to < edgeList.size(); to++) {
+    for (int from : edgeList[to]) {
+      result[from].push_back(to);
     }
   }
-};
+  return result;
+}
+
+void assign_group(const int node, const int group,
+                  const std::vector<std::vector<int>> &inEdgeList,
+                  std::vector<int> &groupList, std::vector<bool> &isVisited) {
+  if (isVisited[node]) return;
+  isVisited[node] = true;
+
+  groupList[node] = group;
+  for (const int c : inEdgeList[node]) {
+    assign_group(c, group, inEdgeList, groupList, isVisited);
+  }
+}
+
+std::vector<int> scc(const std::vector<std::vector<int>> &outEdgeList) {
+  const int N = outEdgeList.size();
+  std::vector<int> preordered;
+  {
+    std::vector<bool> isVisited(N, false);
+    for (int node = 0; node < N; node++) {
+      sort_preorder(node, outEdgeList, preordered, isVisited);
+    }
+  }
+
+  std::reverse(preordered.begin(), preordered.end());
+  auto inEdgeList = inversed_edge(outEdgeList);
+
+  std::vector<int> groupList(N, -1);
+  {
+    std::vector<bool> isVisited(N, false);
+    for (const int node : preordered) {
+      assign_group(node, node, inEdgeList, groupList, isVisited);
+    }
+  }
+
+  return groupList;
+}
