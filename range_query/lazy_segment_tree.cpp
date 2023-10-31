@@ -1,75 +1,92 @@
 #include <cstdint>
 #include <vector>
 
+/**
+ * NOTE:
+ * このセグメント木は不完全な実装のため、限定的なアクションにしか適用できない
+ * 具体的には、f(m1)*f(m2) = f(m1*m2)を満たさなければならない
+ */
+template <typename Monoid, typename Action>
 class LazySegmentTree {
-  std::vector<int64_t> container;
-  std::vector<int64_t> lazyContainer;
+  std::vector<Monoid> monoidContainer;
+  std::vector<Action> actionContainer;
 
  public:
-  LazySegmentTree(int size)
-      : container(msb1(size * 2 - 1)), lazyContainer(msb1(size * 2 - 1)) {}
+  LazySegmentTree(std::size_t size)
+      : monoidContainer(msb1(size * 2 - 1), Monoid::identity()),
+        actionContainer(msb1(size * 2 - 1), Action::empty()) {}
 
-  void add(size_t s, size_t t, int64_t x) {
-    add_inner(s, t, 0, container.size() / 2, 1, x);
+  void add(std::size_t start, std::size_t end, Action action) {
+    add_inner(start, end, 0, monoidContainer.size() / 2, 1, action);
   }
 
-  int64_t find(size_t s, size_t t) {
-    if (s >= t) {
-      return 0;
+  Monoid find(std::size_t start, std::size_t end) {
+    if (start >= end) {
+      return Monoid::identity();
     }
-    return find_inner(s, t, 0, container.size() / 2, 1);
+    return find_inner(start, end, 0, monoidContainer.size() / 2, 1);
   }
 
  private:
-  void add_inner(size_t s, size_t t, size_t lb, size_t ub, size_t node,
-                 int64_t x) {
-    if (s == lb && t == ub) {
-      lazyContainer[node] += x;
+  void add_inner(std::size_t start, std::size_t end, std::size_t lb,
+                 std::size_t ub, std::size_t node, Action action) {
+    if (start == lb && end == ub) {
+      actionContainer[node] = actionContainer[node] * action;
       maintain(node);
       return;
     }
 
-    using std::min, std::max;
-    size_t mid = (lb + ub) / 2;
-    if (mid > s) {
-      add_inner(s, min(mid, t), lb, mid, node * 2, x);
+    using std::size_t, std::min, std::max;
+    const size_t mid = (lb + ub) / 2;
+    const size_t left_child = node * 2;
+    const size_t right_child = node * 2 + 1;
+    if (mid > start) {
+      add_inner(start, min(mid, end), lb, mid, left_child, action);
     }
-    if (mid < t) {
-      add_inner(max(mid, s), t, mid, ub, node * 2 + 1, x);
+    if (mid < end) {
+      add_inner(max(mid, start), end, mid, ub, right_child, action);
     }
-    maintain(node * 2);
-    maintain(node * 2 + 1);
-    container[node] = max(container[node * 2], container[node * 2 + 1]);
+    maintain(left_child);
+    maintain(right_child);
+    monoidContainer[node] =
+        monoidContainer[left_child] * monoidContainer[right_child];
   }
 
-  int64_t find_inner(size_t s, size_t t, size_t lb, size_t ub, size_t node) {
+  Monoid find_inner(std::size_t start, std::size_t end, std::size_t lb,
+                    std::size_t ub, std::size_t node) {
     maintain(node);
-    if (s == lb && t == ub) {
-      return container[node];
+    if (start == lb && end == ub) {
+      return monoidContainer[node];
     }
 
+    using std::int64_t, std::size_t;
     using std::min, std::max;
-    int64_t result = 0;
-    size_t mid = (lb + ub) / 2;
-    if (mid > s) {
-      result = max(result, find_inner(s, min(mid, t), lb, mid, node * 2));
+    Monoid result = Monoid::identity();
+    const size_t mid = (lb + ub) / 2;
+    const size_t left_child = node * 2;
+    const size_t right_child = node * 2 + 1;
+    if (mid > start) {
+      result = result * find_inner(start, min(mid, end), lb, mid, left_child);
     }
-    if (mid < t) {
-      result = max(result, find_inner(max(s, mid), t, mid, ub, node * 2 + 1));
+    if (mid < end) {
+      result = result * find_inner(max(start, mid), end, mid, ub, right_child);
     }
 
     return result;
   }
-  void maintain(size_t node) {
-    container[node] += lazyContainer[node];
+
+  void maintain(std::size_t node) {
+    monoidContainer[node] = actionContainer[node](monoidContainer[node]);
     size_t child = node * 2;
-    if (child < container.size()) {
-      lazyContainer[child] += lazyContainer[node];
-      lazyContainer[child + 1] += lazyContainer[node];
+    if (child < actionContainer.size()) {
+      actionContainer[child] = actionContainer[child] * actionContainer[node];
+      actionContainer[child + 1] =
+          actionContainer[child + 1] * actionContainer[node];
     }
-    lazyContainer[node] = 0;
+    actionContainer[node] = Action::empty();
   }
-  int msb1(int x) {
+
+  std::size_t msb1(std::size_t x) {
     x |= x >> 1;
     x |= x >> 2;
     x |= x >> 4;
